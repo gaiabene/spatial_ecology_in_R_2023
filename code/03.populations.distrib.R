@@ -1,11 +1,16 @@
 # why populations disperse over the landscape in a certain manner?
 
+install.packages("sdm")
+install.packages("terra")
+
 library (sdm)
 library (terra) 
 
+#select the file inside the package
 file <- system.file("external/species.shp", package="sdm")
 
-rana <- vect(file)
+#let's import a vector of this file
+rana <- vect(file) 
 rana$Occurrence
 
 plot(rana) #to see the datas

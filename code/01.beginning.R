@@ -31,6 +31,9 @@ plot(paula, sophi, xlab="number of people", ylab="microplastics")
 people <- paula 
 microplastics <- sophi
 
-plot(people, microplastics, pch=19)
+plot(people, microplastics, pch=19, cex=2, col = "blue")
+#pch gives the shape of the symbols
+#cex gives the size of the symbols
+#col for the colour 
 
 #http://www.sthda.com/english/

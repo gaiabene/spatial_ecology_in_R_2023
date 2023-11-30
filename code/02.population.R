@@ -57,8 +57,8 @@ plot(densitymap, col=cl)
 #Use yellow colour in a proper way, cause it's the most impacting one
 
 #the quality is much worse if we put a smaller number, like
-cl <- colorRampPalette(c("black", "red", "orange", "yellow"))(4) #R is capital letters sensitive!!!
-#100 represents the different colors that can be present between the colors chosen
+cl <- colorRampPalette(c("black", "red", "orange", "yellow"))(4)
+
 plot(densitymap, col=cl)
 
 # MULTIFRAME (shows different plots at the same time)

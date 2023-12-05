@@ -54,43 +54,36 @@ pldc1 + pldc2
 
 plot(ord) #I see the ultimate variate multianalysis space 
 
+
+
+
+
+##### MULTIVARIATE ANALISYS of how species are related in TIME 
 install.packages("overlap")
 library(overlap)
 
-data(kerinci)
+data(kerinci) #data from Kerinci-Seblat National Park in Sumatra, Indonesia
 kerinci
 head(kerinci)
+summary(kerinci)
 
-kerinci$Timerad <- kerinci$Time * 2 * pi
+#Selecting the first species
+tiger <- kerinci[kerinci$Sps=="tiger",] #Sps=species
 
-kerinci$Timerad
-head(kerinci)
+#Selecting the tigers time
+timetig <- kerinci$Time*2*pi 
+#we multiply the the linear time to 2 pi greek to have a time in radiants
 
-
-tiger <- kerinci[kerinci$Sps=="tiger",]
-tiger
-
-timetig <- tiger$timeRad
-timetig
-plot(tiger$timeRad)
-densityPlot(timetig, rug)
-
-timetig <- tiger$timeRad
 densityPlot(timetig, rug=TRUE)
 
+#Selecting the macaque
+macaque <- kerinci[kerinci$Sps=="macaque",] #Sps=species
 
-macaque <- kerinci[kerinci$Sps=="macaque",]
-macaque
-plot(macaque)
-head(macaque)
-densityPlot(timetig, rug = TRUE)
+#Selecting the macaque time
+timemac <- macaque$Time*2*pi 
 
-kerinci$timeRad <- kerinci$Time * 2 * pi
+densityPlot(timemac, rug=TRUE)
 
-tiger <- kerinci[kerinci$Sps=="tiger",]
-
-timetig <- tiger$timeRad
-densityPlot(timetig, rug=TRUE)
-
+overlapPlot(timetig,timemac)
 
 

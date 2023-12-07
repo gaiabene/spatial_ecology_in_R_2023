@@ -19,3 +19,17 @@ sunc <- im.classify(sun, num_clusters=3)
 plot(sunc)
 # in this case the part with the higher energy is the green one 
 
+im.list()
+
+# import matogrosso 
+m1992 <- im.import("matogrosso_ast_2006209_lrg.jpg")
+m2006 <- im.import("matogrosso_l5_1992219_lrg.jpg")   
+
+plotRGB(m1992)
+
+# we use two clusters: one for forest and one for soil, agriculture etc 
+m1992c <- im.classify(m1992, num_clusters = 2)
+plot(m1992c)
+# classes: forest=1, human=2
+
+

@@ -5,6 +5,7 @@
 
 library(terra)
 library(imageRy)
+library(ggplot2)
 
 im.list()
 
@@ -75,6 +76,14 @@ p2006
 class <- c("forest", "human")
 y1992 <- c(83, 17)
 y2006 <- c(45, 55)
+
+# with data.frame we create the final table 
+tabout <- data.frame(class, y1992, y2006)
+
+ggplot(tabout, aes(x=class, y=y1992, color=cover)) + geom_bar(stat="identity", fill="white")
+#aestetic: x is the class, y the image and color related to the class then we add the geometry we want to use
+
+# we can make graphs comparing situations of 1992 and 2006
 
 
 

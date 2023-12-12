@@ -80,10 +80,15 @@ y2006 <- c(45, 55)
 # with data.frame we create the final table 
 tabout <- data.frame(class, y1992, y2006)
 
-ggplot(tabout, aes(x=class, y=y1992, color=cover)) + geom_bar(stat="identity", fill="white")
+p1 <- ggplot(tabout, aes(x=class, y=y1992, color=cover)) + geom_bar(stat="identity", fill="white")
 #aestetic: x is the class, y the image and color related to the class then we add the geometry we want to use
 
-# we can make graphs comparing situations of 1992 and 2006
+p2 <- ggplot(tabout, aes(x=class, y=y2006, color=class)) + geom_bar(stat="identity", fill="white")
+plot(p2)
+
+p1+p2  # we can make graphs comparing situations of 1992 and 2006
+
+
 
 
 

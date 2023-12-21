@@ -33,7 +33,20 @@ plot(sd3)
 viridisc <- colorRampPalette(viridis(7))(255)
 plot(sd3, col=viridisc)
 # variability in space 
-# local standard deviation in all the image 
+# local standard deviation in all the images, calculated 3 by 3 
+
+# Exercise: calculate variability in a 7x7 pixels moving window
+sd7 <- focal(nir, matrix(1/49, 7, 7) fun=sd)
+plot(sd7, col=viridisc)
+
+par(mfrow=c(1,2))
+plot(sd3, col=viridisc)
+plot(sd7, col=viridisc)
+
+# original image plus the 7x7 image
+par(mfrow=c(1,2))
+plot(sd3)
+plot(sd7, col=viridisc)
 
 
 

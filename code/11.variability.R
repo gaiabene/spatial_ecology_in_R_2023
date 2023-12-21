@@ -45,7 +45,7 @@ plot(sd7, col=viridisc)
 
 # original image plus the 7x7 image
 par(mfrow=c(1,2))
-plot(sd3)
+im.plotRGB(sent, r=2, g=1, b=3)
 plot(sd7, col=viridisc)
 
 

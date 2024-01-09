@@ -6,6 +6,8 @@
 library(terra)
 library(imageRy)
 library(ggplot2)
+library(patchwork) 
+# the package patchwork allows to put several graphs all together 
 
 im.list()
 

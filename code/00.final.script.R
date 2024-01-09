@@ -622,6 +622,7 @@ plot(iceland2023c)
 library(terra)
 library(imageRy)
 library(ggplot2)
+library(patchwork) # allows to put several graphs all together
 
 im.list()
 

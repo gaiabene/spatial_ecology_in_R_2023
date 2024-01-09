@@ -783,6 +783,7 @@ pairs(sent)
 sentpc <- im.pca2(sent)
 
 # the first component is PC1: it corresponds to sentpc
+# we use that to make the calculation
 
 pc1 <- sentpc$PC1
 

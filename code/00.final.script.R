@@ -14,7 +14,7 @@
 # 08 Copernicus
 # 09 Classification time
 # 10 Variability
-# 11 PCA
+# 11 PCA: Principal Component Analysis
 
 # ----------------------
 

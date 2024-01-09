@@ -12,6 +12,9 @@
 # 06 Time series analysis
 # 07 External data import
 # 08 Copernicus
+# 09 Classification time
+# 10 Variability
+# 11 PCA
 
 # ----------------------
 
@@ -605,6 +608,219 @@ ext <- c(22, 26, 55, 57) #ho scelto longitudine e latitudine da visualizzare
 iceland2023c <- crop(iceland2023, ext)
 iceland2023c
 plot(iceland2023c)
+
+
+# --------------------
+
+# 09
+
+#Getting an idea of pixels and areas changing in time 
+#pixels are called trained area 
+#classes called clusters 
+
+
+library(terra)
+library(imageRy)
+library(ggplot2)
+
+im.list()
+
+# we use number 29: Solar_Orbiter to classify the solar energy based on gasses 
+# https://www.esa.int/ESA_Multimedia/Images/2020/07/Solar_Orbiter_s_first_views_of_the_Sun6
+
+sun <- im.import ("Solar_Orbiter_s_first_views_of_the_Sun_pillars.jpg")
+# we have to explain to the software the clusters 
+# here we have 3 clusters 
+
+sunc <- im.classify(sun, num_clusters=3)
+plot(sunc)
+# in this case the part with the higher energy is the green one 
+
+im.list()
+
+m1992 <- im.import("matogrosso_l5_1992219_lrg.jpg")   
+m2006 <- im.import("matogrosso_ast_2006209_lrg.jpg")
+
+
+plotRGB(m1992)
+#here water should be black but there are several deposits so soil 
+#we use 2 clusters: one for forest and one for soil, agriculture  etc..
+
+m1992c <- im.classify(m1992, num_clusters = 2)
+plot(m1992c)
+#classes: forest=1, human=2
+
+plotRGB(m2006)
+m2006c <- im.classify(m2006, num_clusters = 2)
+plot(m2006c)
+#classes: forest=1, human=2
+
+par(mfrow=c(1,2))
+plot(m1992c[[1]])
+plot(m2006c[[1]])
+
+f1992 <- freq(m1992c)
+
+f1992
+
+# let's extract the total number of pixels 
+tot1992 <- ncell(m1992c)
+tot1992
+
+# let's calculate the percentage by dividing by the total number of pixels 
+p1992 <- f1992 * 100 / tot1992
+p1992
+
+#forest:83%; human: 17%
+
+
+#percentage of 2006
+f2006 <- freq(m2006c)
+f2006
+
+tot2006 <- ncell(m2006c)
+tot2006
+
+p2006 <- f2006 * 100 / tot2006
+p2006
+
+# forest: 45%; human: 55%
+
+# bulding the final table
+# first of all we build the colums 
+
+class <- c("forest", "human")
+y1992 <- c(83, 17)
+y2006 <- c(45, 55)
+
+# with data.frame we create the final table 
+tabout <- data.frame(class, y1992, y2006)
+
+p1 <- ggplot(tabout, aes(x=class, y=y1992, color=cover)) + geom_bar(stat="identity", fill="white")
+#aestetic: x is the class, y the image and color related to the class then we add the geometry we want to use
+
+p2 <- ggplot(tabout, aes(x=class, y=y2006, color=class)) + geom_bar(stat="identity", fill="white")
+plot(p2)
+
+p1+p2  # we can make graphs comparing situations of 1992 and 2006
+
+
+# ---------------------
+
+# 10
+
+# measuring of RS based variability
+
+library(terra)
+library(imageRy)
+library(viridis)
+
+im.list()
+
+sent <- im.import("sentinel.png")
+
+# band 1 = NIR
+# band 2 = red
+# band 3 = green 
+
+im.plotRGB(sent, r=1, g=2, b=3)
+im.plotRGB(sent, r=2, g=1, b=3)
+
+# let's calculate the variability, in this case we have 3 variables available
+# the 3 variables are the 3 reflectans of different colours 
+# multivariate analysis
+
+nir <- sent[[1]]
+plot(nir)
+
+# calculate variability in space using "MOVING WINDOW" -> tecnique for the computation of diversity indecies 
+# calculate the standard devation of tot pixels, then the moving window will move in another part
+# repeat the calculation of another part, we will pass the moving window from one place to the other ad calculate the standard deviation of all the image
+
+# function focal to calculate standard deviation    
+sd3 <- focal(nir, matrix(1/9, 3, 3), fun=sd)
+plot(sd3)
+
+viridisc <- colorRampPalette(viridis(7))(255)
+plot(sd3, col=viridisc)
+# variability in space 
+# local standard deviation in all the images, calculated 3 by 3 
+
+# Exercise: calculate variability in a 7x7 pixels moving window
+sd7 <- focal(nir, matrix(1/49, 7, 7) fun=sd)
+plot(sd7, col=viridisc)
+
+par(mfrow=c(1,2))
+plot(sd3, col=viridisc)
+plot(sd7, col=viridisc)
+
+# original image plus the 7x7 image
+par(mfrow=c(1,2))
+im.plotRGB(sent, r=2, g=1, b=3)
+plot(sd7, col=viridisc)
+
+
+# ---------------------
+
+# 11
+
+library(imageRy)
+library(terra)
+library(viridis)
+
+im.list()
+
+im.import("sentinel.png")
+
+# we are going to see how much the bands of pairs are related 
+pairs(sent)
+
+# perform PCA on sent 
+sentpc <- im.pca(sent)
+pairs(sent)
+
+sentpc <- im.pca2(sent)
+
+# the first component is PC1: it corresponds to sentpc
+
+pc1 <- sentpc$PC1
+
+viridisc <- colorRampPalette(viridis(7))(255)
+plot(pc1, col=viridisc)
+
+# calculating standard deviation on top of pc1
+pc1sd3 <- focal(pc1, matrix(1/9, 3, 3), fun=sd)
+plot(pc1sd3, col=viridisc)
+
+# translate to a moving window of 3x3 to a moving window of 7x7
+
+pc7sd3 <- focal(pc1, matrix(1/49, 7,7), fun=sd)
+plot(pc7sd3, col=viridisc)
+
+par(mfrow=c(2,3))
+im.plotRGB(sent, 2, 1, 3)
+
+# sd from variability script: 
+plot(sd3, col=viridisc)
+plot(sd7, col=viridisc)
+plot(pc1, col=viridisc)
+plot(pc1sd3, col=viridisc)
+plot(pc1sd7, col=viridisc)
+
+# to see al the images without mfrow, stack all the standard deviation layers 
+# the foggy effect is due to including several pixels so variability is high
+sdstack <- c(sd3, sd7, pc1sd3, pc1sd7)
+plot(sdstack, col=viridisc)
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -23,7 +23,7 @@ nir <- sent[[1]]
 plot(nir)
 
 # calculate variability in space using "MOVING WINDOW" -> tecnique for the computation of diversity indecies 
-# calculate the standard devation of tot pixels, then the moving window will move in another part
+# calculate the standard deviation of tot pixels, then the moving window will move in another part
 # repeat the calculation of another part, we will pass the moving window from one place to the other ad calculate the standard deviation of all the image
 
 # function focal to calculate standard deviation    

@@ -1,0 +1,20 @@
+---
+title: "MarkdownReport"
+author: "Gaia Benevenga"
+output: html_document
+date: "2024-01-09"
+---
+
+# My first Markdown document 
+# The hashtag is a title
+
+Here you can add some text if you want 
+
+```{r, eval=T} # the symbols have to be closed, inside there can be an operation
+2+3
+```
+
+In this case you do not: 
+```{r, eval=F}
+2+3
+```

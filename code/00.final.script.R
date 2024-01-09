@@ -7,11 +7,17 @@
 # 02.1 Population density
 # 02.2 Population distribution
 # 03 Comunities distribution
-# 04 Remote sensing visualization 
+# 04 Remote sensing data visualization 
+# 05 Spectral index
+# 06 Time series analysis
+# 07 External data import
+# 08 Copernicus
 
 # ----------------------
 
 
+
+# 01 Beginning
 
 #R as a calculator 
 5+4
@@ -27,7 +33,6 @@ duccio
 duccio * zima
 final <- duccio * zima
 final
-
 
 
 ####Array
@@ -54,7 +59,8 @@ plot(people, microplastics, pch=19, cex=2, col = "blue")
 #http://www.sthda.com/english/
 
 
-
+# -------------------------
+# 02.1
 
 #Codes related to POPULATION GROWTH
 
@@ -130,9 +136,9 @@ par(mfrow=c(2,1)) #2 rows and 1 column, and they're part of an array
 plot(densitymap)
 plot(elev)
 
+# --------------------------
 
-
-
+# 02.2
 
 # How populations disperse over the landscape in a certain manner?
 
@@ -213,9 +219,9 @@ plot(precmap)
 plot(vegemap)
 
 
+# ----------------------
 
-
-
+# 03
 
 #In communities, species are overlapping in space and time
 # MULTIVARIATE ANALISYS of how species are related in SPACE 
@@ -273,8 +279,9 @@ pldc1 + pldc2
 
 plot(ord) #I see the ultimate variate multianalysis space 
 
+# ----------------------
 
-
+# 04
 
 # SATELLITE DATA VISUALIZING
 # Where to store additional packages, not present in R? 
@@ -314,7 +321,7 @@ plot(b4,col=c3)
 plot(b8, col=c4) 
 
 
-###### # STACK IMAGES
+####### STACK IMAGES
 # they're a function that plots all the selected images together, one over the other (in this case, four bands all together)
 # RGB SPACE = Red, Green and Blue components that build other colours by overlapping
 # 1.BLUE
@@ -343,10 +350,261 @@ im.plotRGB(stack_sent, r=3, g=2, b=4)
 # CORRELATIONS BETWEEN THE BANDS
 pairs(stack_sent)
 
+# --------------------------
+
+# 05
+
+# VEGETATION INDEX in 1992 and 2006 to see the evolution of the area
+install.packages("ggplot2")
+install.packages("viridis")
+library(ggplot2)
+library(viridis)
+library(terra)
+library(imageRy)
+im.list()
+
+m1992<- im.import("matogrosso_l5_1992219_lrg.jpg") #image from satellite LANDSAT (1962)
+#it's a processed image, where bands 1=NIR, 2=RED, 3=GREEN
+im.plotRGB(m1992, r=1, g=2, b=3) 
+#in this way, the NIR bands will be depicted in red: they're typical of an healthy vegetation
+#the RED ones will be represented in green: they're typical of unhealthy or absent vegetation
+#and the GREEN one will be painted in blue
+im.plotRGB(m1992, r=2, g=1, b=3)
+im.plotRGB(m1992, r=2, g=3, b=1)
+
+m2006<-im.import("matogrosso_ast_2006209_lrg.jpg")
+im.plotRGB(m2006,r=2, g=3, b=1)
+
+# import the 2006 image
+m2006 <- im.import("matogrosso_ast_2006209_lrg")
+#Again, it's a processed image, where bands 1=NIR, 2=RED, 3=GREEN
+im.plotRGB(m2006, r=2, g=3, b=1)
+im.plotRGB(m2006, r=2, g=1, b=3) #we see the result of deforestation
+
+#build a multiframe with 1992 and 2006 images
+
+par(mfrow = c(1, 2)) 
+im.plotRGB(m1992, r=2, g=3, b=1)
+im.plotRGB(m2006, r=2, g=3, b=1)
+dev.off()
+
+plot(m1992[[1]])
+#In this picture, the range of reflectance goes from 0 to 255 (pink-green colors)
+#Reflectance is the ratio between reflected and incident radiant flux 
+#One bit of info can be 0 or 1 (BINARY CODE)
+#The formula to calculate the amount of information every bit gives is:
+#2 raise to the power of n, where n is the number of bits.
+#Ex: 4 bits will have 16 bits of information. 
+#In this picture we have up to 8 bits, hence, up to 255 bits of reflectance (2 raised to power 8).
+
+# The difference between the two bands give us the DVI.
+# DVI = NIR - RED, where bands: 1=NIR, 2=RED, 3=GREEN
+dvi1992 = m1992 [[1]] - m1992 [[2]] #dvi of 1992 is the difference between band 1 and 2
+plot(dvi1992)
+
+#now changing the palette
+cl <- colorRampPalette (c("dark blue", "yellow", "red", "black"))(100)
+plot(dvi1992, col=cl)
+#everything that's dark red is healthy, yellow and blue is bad from the vegetation point of view as it represents bare soil.
+
+#exercise DVI of 2006
+dvi2006 = m2006[[1]] - m2006[[2]]
+plot(dvi2006)
+cl <- colorRampPalette (c("dark blue", "yellow", "red", "black"))(100)
+plot(dvi2006, col=cl) #plotting the DVI of 2006 with the same coloring palette.
+
+# NDVI = NIR - RED/ NIR + RED
+
+ndvi1992 = ( m1992 [[1]] - m1992 [[2]] )/ (m1992[[1]] + m1992[[2]])
+#also
+ndvi1992 =  dvi1992/ (m1992[[1]] + m1992[[2]])
+plot(ndvi1992, col=cl)
+
+#NDVI for 2006
+
+ndvi2006 = ( m2006 [[1]] - m2006 [[2]] )/ (m2006[[1]] + m2006[[2]])
+ndvi2006 =  dvi2006/ (m2006[[1]] + m2006[[2]])
+plot(ndvi2006, col=cl)
+
+#plot them together 1992 and 2006, both ranging from -1 to 1. forest on right and cultivated on left
+
+par(mfrow = c (1,2))
+plot(ndvi1992, col=cl)
+plot(ndvi2006, col=cl)
+
+#speeding up the calculation of the NDVI, the function is: im.ndvi()
+
+ndvi2006a <- im.ndvi (m2006, 1, 2) 
+plot(ndvi2006a, col=cl) 
+
+# --------------------------
+
+# 06
+
+# TIME SERIES are series of data (images) scattered in time 
+library(terra)
+library(imageRy)
+im.list()
+
+#### CHANGES IN NITROGEN CONCENTRATION due to COVID, from January to March 2020
+EN01 <- im.import("EN_01.png") #European Nitrogen in January
+EN13 <- im.import("EN_13.png") #European Nitrogen in March
+EN01
+EN13
+
+par(mfrow=c(2,1))
+im.plotRGB.auto(EN01)
+im.plotRGB.auto(EN13)
+
+#Let's make the difference between the red bands of the first two images
+dev.off()
+diff=EN01[[1]]-EN13[[1]]
+plot(diff)
+
+# Reminder: blue and red or green and red aren't good for daltonic people
+# So, let's change the colors
+
+cl <- colorRampPalette(c('red','orange','yellow'))(100)  
+plot(diff,col=cl) 
+# red is higher in march, yellow is higher in january
+# so we have a huge decrease in march (there's more yellow than red)
+# we see that in many cities people stopped to use cars
+
+##### CHANGES IN TEMPERATURE of Greenland ice sheet
+
+dev.off()
+im.list()
+G2000 <- im.import("greenland.2000.tif") #16 bits image
+plot(G2000,col=cl) # temperature on the surface of the land
+# red=almost perennial ice cap
+
+G2005 <- im.import("greenland.2005.tif")
+G2010 <- im.import("greenland.2010.tif")
+G2015 <- im.import("greenland.2015.tif")
+
+par(mfrow=c(2,2))
+plot(G2000,col=cl)
+plot(G2005,col=cl)
+plot(G2010,col=cl)
+plot(G2015,col=cl)
+
+# to make it more effective
+cl1 <- colorRampPalette(c('black', 'blue','white','red'))(100) 
+par(mfrow=c(2,2))
+plot(G2000,col=cl1)
+plot(G2005,col=cl1)
+plot(G2010,col=cl1)
+plot(G2015,col=cl1)
+
+# it's the same as
+
+dev.off()
+stackG4 <- c(G2000,G2005,G2010,G2015)  #around 2005 there was the worst period
+plot(stackG4, col=cl1)
+# we see that the surface temperature in Greenland have increased and then decreased back, while that in the Nunavut has gradually increased
+# also Island's temperature has decreased a little bit
+
+# or only the first and the last
+dev.off()
+stackG2<-c(G2000,G2015)
+plot(stackG2, col=cl1)
+
+# Make the difference between the first and the last element
+diffg <- stackG4[[1]]-stackG4[[4]]
+# it's the same as
+difg <- G2000-G2015
+plot(diffg, col=cl1) 
+# blue=temperature was lower in the past 
+# so there's a lot of increase in temperatures, therefore so decrease in ice sheet
+# red= temperature was higher in the past
+
+# Make a RGB plot using different years
+dev.off()
+im.plotRGB(stackG4, r=1,g=2,b=3)
+# red = temperature was lower in the past (external part)
+# green = temperature similar to the past
+# blue = temperature was higher in the past (central part)
+
+
+# ------------------------
+
+# 07
+
+
+library(terra)
+
+setwd("/Users/gaiabenevenga/Desktop/download images")
+getwd()
+
+#rast function from terra to upload our data 
+
+naja <- rast("najafiraq_etm_2003140_lrg.jpeg")
+plotRGB(naja, r=1, g=2, b=3)
+
+#exercise: download the second image 
+
+najaaug <- rast("najafiraq_oli_2023219_lrg.jpeg")
+plotRGB(najaaug, r=1, g=2, b=3)
+
+par(mfrow=c(2,1))
+plotRGB(naja, r=1, g=2, b=3)
+plotRGB(najaaug, r=1, g=2, b=3)
+
+najadif=naja[[1]] - najaaug[[1]]
+dev.off()
+cl <- colorRampPalette(c("brown", "grey", "orange"))(100)
+plot(najadif, col=cl)
+
+
+aca <- rast("acapulco_otis_oli_2023264_lrg.jpeg")
+plotRGB(aca, r=1, g=2, b=3)
+
+aca2 <- rast("acapulco_otis_oli2_2023304_lrg.jpeg")
+plotRGB(aca2, r=1, g=2, b=3)
+
+acadif = aca[[1]] - aca2[[1]]
+plot(acadif)
+plot(acadif, col=cl)
 
 
 
 
+#per vedere quali file ci sono all'interno della cartella selezionata
+list.files()
+
+
+# ------------------------
+
+# 08
+
+# https://land.copernicus.vgt.vito.be/PDF/portal/Application
+
+install.packages("ncdf4")
+
+library(ncdf4)
+library(terra)
+
+setwd("/Users/gaiabenevenga/Desktop/download images")
+iceland2023 <- rast("c_gls_LST_202311281500_GLOBE_GEO_V2.1.2.nc")
+iceland2023
+
+plot(iceland2023)
+
+plot(iceland2023[[1]])
+
+cl <- colorRampPalette(c("red", "orange", "yellow"))(100)
+plot(iceland2023, col=cl)
+
+ext <- c(-180, 180, -90, 90)
+extension <- crop(s, ext)
+
+ext <- c(22, 26, 55, 57) #ho scelto longitudine e latitudine da visualizzare 
+#minloong, maxlong, minlat, maxlat
+#use the function crop to take the image and crope it
+
+iceland2023c <- crop(iceland2023, ext)
+iceland2023c
+plot(iceland2023c)
 
 
 

@@ -1,4 +1,4 @@
-# why populations disperse over the landscape in a certain manner?
+# How populations disperse over the landscape in a certain manner?
 
 install.packages("sdm")
 install.packages("terra")

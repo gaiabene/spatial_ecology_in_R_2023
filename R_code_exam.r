@@ -29,16 +29,12 @@ plot(b11_16)
 
 
 
-# Stacking the bands b2, b3, b4 to create a true color image
-VIS_image16 <- c(b2_16, b3_16, b4_16)
-
-
-
-
 c1 <- colorRampPalette(c("black", "grey", "white")) (100)
 c2 <- colorRampPalette(c("purple", "pink", "white")) (100)
 c3 <- colorRampPalette(c("darkgreen", "lightgreen", "white")) (100)
 c4 <- colorRampPalette(c("blue", "lightblue", "white")) (100)
+
+
 
 par(mfrow=c(2,2))
 plot(b2_16,col=c1)
@@ -52,11 +48,11 @@ stack_sent_16 <- c(b2_16,b3_16,b4_16,b8_16)
 plot(stack_sent_16)
 
 
+# TRUE COLOR VIEW OF 2016
+VIS16 <- im.plotRGB(stack_sent_16, r = 3, g = 2, b = 1) 
 
-VIS16 <- im.plotRGB(stack_sent_16, r = 3, g = 2, b = 1) # our view
-
-
-im.plotRGB(stack_sent_16, 4, 3, 2) #with infrared
+# INFRARED VIEW
+im.plotRGB(stack_sent_16, 4, 3, 2) 
 
 # CHANGE THE POSITION OF THE NIR
 im.plotRGB(stack_sent_16, r=3, g=4, b=2)
@@ -64,7 +60,7 @@ im.plotRGB(stack_sent_16, r=3, g=2, b=4)
 
 
 
-### Gran paradiso 2023
+### Gran Paradiso 2023
 
 b2_23 <- rast("gp_2023_b2.jpg")
 plot(b2_23)
@@ -106,9 +102,6 @@ SWIR23 <- b11_23_scaled
 
 
 
-
-ext(b2_16) == ext(b8_23_scaled)
-
 c5 <- colorRampPalette(c("magenta4", "maroon2", "white"))(100)
 c6 <- colorRampPalette(c("tomato4", "chocolate", "cornsilk"))(100)
 c7 <- colorRampPalette(c("darkslategray", "darkseagreen3", "ghostwhite"))(100)
@@ -128,39 +121,18 @@ stack_sent_23 <- c(b2_23, b3_23, b4_23, b8_23_scaled)
 plot(stack_sent_23)
 
 
-r2 <- rast(b2_23)
-r3 <- rast(b3_23)
-r4 <- rast(b4_23)
-r8 <- rast(b8_23_scaled)
-compareGeom(r2, r3, r8)
 
-
+# TRUE COLOR VIEW OF 2023 
 VIS23 <- im.plotRGB(stack_sent_23, r = 3, g = 2, b = 1)
 
 
 
-gp_16_truecolor <- rast("granparadiso16.jpg")
-plot(gp_16_truecolor)
 
-gp_23_truecolor <- rast("granparadiso23.jpg")
-plot(gp_23_truecolor)
-
-dev.off()
-
-# Create classes 
-
-gp_16_c1 <- im.classify(b8_16,num_clusters = 3)
-plot(gp_16_c1)
-
-
-#calculate the NDSI (NORMALIZED DIFFERENCE SNOW INDEX)
-
-# Load your raster data with bands representing the visible and shortwave infrared
-visible_band <- rast("path/to/visible_band.tif")
-swir_band <- rast("path/to/swir_band.tif")
 # VIS band: b2, b3, b4
-# SWIR band: b8 or b12?
-# NDSI: VIS - SWIR / VIS + SWIR 
+# SWIR band: b8 or b11
+# NDSI: green(b3) - SWIR / green(b3) + SWIR 
+
+
 
 
 # Calculate NDSI
@@ -168,12 +140,128 @@ NDSI16 <- ((b3_16- SWIR16) / (b3_16 + SWIR16))
 NDSI16
 plot(NDSI16)
 
+
 col_new <- colorRampPalette(c("darkorchid4", "chocolate1","cornsilk3", "darkolivegreen"))(100)
 plot(NDSI16, col=col_new, main = "Normalized Difference Snow Index (NDSI) 2016" )
 
 NDSI23 <- ((b3_23 - SWIR23) / (b3_23 + SWIR23))
 NDSI23
+plot(NDSI23)
 plot(NDSI23, col=col_new, main= "Normalized Difference Snow Index (NDSI) 2023")
 
+
+# Calculate the difference between the two years
+diff <- NDSI16 - NDSI23
+
+col_new2 <- colorRampPalette(c("darkorchid4", "cornsilk", "darkgreen"))(100)
+plot(diff, col=col_new2, main = "NSDI Difference (2016 - 2023) ")
+
+
+hist(NDSI16, col= c("orchid4"), main= "Snow frequency in 2016", xlab = "NDSI")
+hist(NDSI23, col= c("orchid4"), main= "Snow frequency in 2023", xlab = "NDSI")
+hist(diff, main = "Differences in Snow coverage", col="darkgreen",  xlab = "NDSI Difference")
+
+
+
+
+### Threshold the raster to create a binary mask for snow-covered areas
+
+# First: define your thersholds
+snow_covered <- 0.4
+mixture_covered <- 0
+no_snow <- (-1:0)
+
+# Create binary masks based on the thresholds
+snow_mask <- NDSI16 > snow_covered
+mixture_mask <- NDSI16 > mixture_covered
+
+# Combine the masks to create clusters
+clusters <- snow_mask + 2 * mixture_mask
+
+# Visualize the clusters for the image of 2016
+plot(clusters, col= col_clusters, main = "Clusters (Snow, Mixture, No Snow)")
+
+
+
+col_clusters <- colorRampPalette(c("white","yellow2", "darkgreen"))(100)
+
+
+
+# Same work for 2023
+snow_mask23 <- NDSI23 > snow_covered
+mixture_mask23 <- NDSI23 > mixture_covered
+
+# Combine the masks to create clusters
+clusters2 <- snow_mask23 + 2 * mixture_mask23
+
+# Visualize the clusters for the image of 2023
+plot(clusters2, col= col_clusters, main = "Clusters (Snow, Mixture, No Snow)")
+
+
+par(mfrow=c(1,2))
+plot(clusters[[1]])
+plot(clusters2[[1]])
+
+dev.off()
+
+
+
+### Calculate the frequency and the number of pixels
+f2016 <- freq(clusters)
+
+f2016
+
+# let's extract the total number of pixels 
+tot2016 <- ncell(clusters)
+tot2016
+
+# let's calculate the percentage by dividing by the total number of pixels 
+p2016 <- f2016 * 100 / tot2016
+p2016
+
+#snow:65.5% ; mixture: 8.5% ; no-snow: 26%
+
+
+
+### Percentage of 2023
+f2023 <- freq(clusters2)
+f2023
+
+tot2023 <- ncell(clusters2)
+tot2023
+
+p2023 <- f2023 * 100 / tot2023
+p2023
+
+# forest: 46.5% ; mixture: 31% ; no-snow: 22.5%
+
+
+# bulding the final table
+# first of all we build the colums 
+
+class <- c("SNOW", "MIXTURE", "NO-SNOW")
+y2016 <- c(65.5, 8.5, 26)
+y2023 <- c(46.5, 31, 22.5)
+
+# with data.frame we create the final table 
+tabout <- data.frame(class, y2016, y2023)
+
+
+p1 <- ggplot(tabout, aes(x=class, y=y2016, color=class)) + geom_bar(stat="identity", fill="white") + ylim(c(0,100))
+p2 <- ggplot(tabout, aes(x=class, y=y2023, color=class)) + geom_bar(stat="identity", fill="white") + ylim(c(0,100))
+plot(p1)
+plot(p2)
+p1 + p2
+
+dev.off()
+
+
+# function focal to calculate standard deviation    
+sd16 <- focal(NDSI16, matrix(1/9, 3, 3), fun=sd)
+plot(sd16)
+
+
+sd23 <- focal(NDSI23, matrix(1/9, 3, 3), fun=sd)
+plot(sd23)
 
 

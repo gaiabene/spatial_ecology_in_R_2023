@@ -151,7 +151,7 @@ plot(NDSI23, col=col_new, main= "Normalized Difference Snow Index (NDSI) 2023")
 
 
 
-# Calculate the difference between the two years
+# Compute the difference between the two years
 diff <- NDSI16 - NDSI23
 plot(diff)
 
@@ -170,9 +170,9 @@ hist(diff, main = "Differences in Snow coverage", col="darkgreen",  xlab = "NDSI
 
 
 
-### Threshold the raster to create a binary mask for snow-covered areas
+### Create a binary mask for snow-covered areas
 
-# First: define your thersholds
+# Define the 3 thresholds
 snow_covered <- 0.4
 mixture_covered <- 0
 no_snow <- (-1:0)
@@ -270,10 +270,10 @@ dev.off()
 # Calculate standard deviation 
 # Variability in space
 sd16_3 <- focal(NDSI16, matrix(1/9, 3, 3), fun=sd)
-plot(sd16)
+plot(sd16_3)
 
 sd23_3 <- focal(NDSI23, matrix(1/9, 3, 3), fun=sd)
-plot(sd23)
+plot(sd23_3)
 
 sd16_7 <- focal(NDSI16, matrix(1/49, 7, 7), fun=sd)
 plot(sd16_7)

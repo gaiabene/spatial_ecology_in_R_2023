@@ -1,11 +1,11 @@
 # PROJECT ABOUT DIFFERENCES IN SNOW COVERAGE IN GRAN PARADISO NATIONAL PARK
 # DATA FROM 2016 AND 2023
 
-
 library(terra)
 library(imageRy)
 library(ncdf4)
 library(ggplot2)
+library(raster)
 
 
 setwd("/Users/gaiabenevenga/Desktop/R_code_exam/images")
@@ -101,11 +101,11 @@ SWIR16 <- b11_16_scaled
 SWIR23 <- b11_23_scaled
 
 
-
 c5 <- colorRampPalette(c("magenta4", "maroon2", "white"))(100)
 c6 <- colorRampPalette(c("tomato4", "chocolate", "cornsilk"))(100)
 c7 <- colorRampPalette(c("darkslategray", "darkseagreen3", "ghostwhite"))(100)
 c8 <- colorRampPalette(c("darkblue", "lightsteelblue3", "white"))(100)
+
 
 
 par(mfrow=c(2,2))
@@ -150,11 +150,18 @@ plot(NDSI23)
 plot(NDSI23, col=col_new, main= "Normalized Difference Snow Index (NDSI) 2023")
 
 
+
+
 # Calculate the difference between the two years
 diff <- NDSI16 - NDSI23
+plot(diff)
 
 col_new2 <- colorRampPalette(c("darkorchid4", "cornsilk", "darkgreen"))(100)
-plot(diff, col=col_new2, main = "NSDI Difference (2016 - 2023) ")
+plot(diff, col=col_new2, main = "NDSI Difference (2016 - 2023) ")
+
+#the green areas indicate a positive difference: this means there was more snow in 2016
+#the white areas indicate no significance variations 
+#the purple ones indicate negative difference: there was less snow in those areas 
 
 
 hist(NDSI16, col= c("orchid4"), main= "Snow frequency in 2016", xlab = "NDSI")
@@ -176,15 +183,21 @@ snow_mask <- NDSI16 > snow_covered
 mixture_mask <- NDSI16 > mixture_covered
 
 # Combine the masks to create clusters
-clusters <- snow_mask + 2 * mixture_mask
+clusters16 <- snow_mask + 2 * mixture_mask
 
 # Visualize the clusters for the image of 2016
-plot(clusters, col= col_clusters, main = "Clusters (Snow, Mixture, No Snow)")
+plot(clusters16, col= col_clusters, main = "Clusters (Snow, Mixture, Vegetation)")
 
 
 
 col_clusters <- colorRampPalette(c("white","yellow2", "darkgreen"))(100)
 
+ccc <- im.classify(NDSI16, num_clusters = 3)
+plot(ccc)
+
+
+ccc2 <- im.classify(NDSI23, num_clusters = 3)
+plot(ccc2)
 
 
 # Same work for 2023
@@ -192,27 +205,27 @@ snow_mask23 <- NDSI23 > snow_covered
 mixture_mask23 <- NDSI23 > mixture_covered
 
 # Combine the masks to create clusters
-clusters2 <- snow_mask23 + 2 * mixture_mask23
+clusters23 <- snow_mask23 + 2 * mixture_mask23
 
 # Visualize the clusters for the image of 2023
-plot(clusters2, col= col_clusters, main = "Clusters (Snow, Mixture, No Snow)")
+plot(clusters23, col= col_clusters, main = "Clusters (Snow, Mixture, Vegetation)" )
 
 
 par(mfrow=c(1,2))
-plot(clusters[[1]])
-plot(clusters2[[1]])
+plot(clusters16[[1]])
+plot(clusters23[[1]])
 
 dev.off()
 
 
 
 ### Calculate the frequency and the number of pixels
-f2016 <- freq(clusters)
+f2016 <- freq(clusters16)
 
 f2016
 
 # let's extract the total number of pixels 
-tot2016 <- ncell(clusters)
+tot2016 <- ncell(clusters16)
 tot2016
 
 # let's calculate the percentage by dividing by the total number of pixels 
@@ -224,22 +237,21 @@ p2016
 
 
 ### Percentage of 2023
-f2023 <- freq(clusters2)
+f2023 <- freq(clusters23)
 f2023
 
-tot2023 <- ncell(clusters2)
+tot2023 <- ncell(clusters23)
 tot2023
 
 p2023 <- f2023 * 100 / tot2023
 p2023
 
-# forest: 46.5% ; mixture: 31% ; no-snow: 22.5%
+# snow: 46.5% ; mixture: 31% ; no-snow: 22.5%
 
 
-# bulding the final table
-# first of all we build the colums 
+# Bulding tables with the percentages 
 
-class <- c("SNOW", "MIXTURE", "NO-SNOW")
+class <- c("SNOW", "MIXTURE", "VEGETATION")
 y2016 <- c(65.5, 8.5, 26)
 y2023 <- c(46.5, 31, 22.5)
 
@@ -251,17 +263,23 @@ p1 <- ggplot(tabout, aes(x=class, y=y2016, color=class)) + geom_bar(stat="identi
 p2 <- ggplot(tabout, aes(x=class, y=y2023, color=class)) + geom_bar(stat="identity", fill="white") + ylim(c(0,100))
 plot(p1)
 plot(p2)
-p1 + p2
+
 
 dev.off()
 
 
-# function focal to calculate standard deviation    
-sd16 <- focal(NDSI16, matrix(1/9, 3, 3), fun=sd)
+# Calculate standard deviation 
+# Variability in space
+sd16_3 <- focal(NDSI16, matrix(1/9, 3, 3), fun=sd)
 plot(sd16)
 
-
-sd23 <- focal(NDSI23, matrix(1/9, 3, 3), fun=sd)
+sd23_3 <- focal(NDSI23, matrix(1/9, 3, 3), fun=sd)
 plot(sd23)
+
+sd16_7 <- focal(NDSI16, matrix(1/49, 7, 7), fun=sd)
+plot(sd16_7)
+
+sd23_7 <- focal(NDSI23, matrix(1/49, 7, 7), fun=sd)
+plot(sd23_7)
 
 

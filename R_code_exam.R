@@ -5,7 +5,6 @@ library(terra)
 library(imageRy)
 library(ncdf4)
 library(ggplot2)
-library(raster)
 
 
 setwd("/Users/gaiabenevenga/Desktop/R_code_exam/images")

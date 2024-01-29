@@ -22,6 +22,18 @@ pc1 <- sentpc$PC1
 viridisc <- colorRampPalette(viridis(7))(255)
 plot(pc1, col=viridisc)
 
+# Pearson correlation index goes from -1 to +1. We see that there's perfect correlation between the visible bands, while the NIR adds more info so there's no correlation with the others. 
+
+# MULTIVARIATE ANALYSIS
+# Measurement of R based variability with a single layer, which is chosen objectivle with Multivariate Analysis
+# compact the 3 bands of sentinel into one to better visualize it
+
+# we have already seen the DCA (detrended component analysis)
+# now we will see the PCA (principal component analysis)
+# the last row is nothing
+
+# it says that the principal component will show the 71% of the variability, the second 53% etc.
+
 # calculating standard deviation on top of pc1
 pc1sd3 <- focal(pc1, matrix(1/9, 3, 3), fun=sd)
 plot(pc1sd3, col=viridisc)

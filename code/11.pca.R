@@ -4,7 +4,7 @@ library(viridis)
 
 im.list()
 
-im.import("sentinel.png")
+sent <- im.import("sentinel.png") #Semilaun Glacier
 
 # we are going to see how much the bands of pairs are related 
 pairs(sent)

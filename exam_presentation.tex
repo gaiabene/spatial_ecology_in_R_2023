@@ -1,0 +1,227 @@
+\documentclass{beamer}
+\usepackage{graphics} %required to insert images 
+\usepackage{listings}
+\usepackage{siunitx}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+
+\title{Snow coverage variation in Gran Paradiso National Park}
+\subtitle{Comparing data from February 2016 and 2023}
+
+
+\author{Gaia Benevenga}
+
+\date{January 2024}
+
+\begin{document}
+
+\maketitle
+
+\AtBeginSection[] % Do nothing for \section*
+{
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents[currentsection]
+\end{frame}
+}
+
+\section{Aim of the project}
+\begin{frame}{About the project}
+\begin{itemize}
+    \item Compare snow coverage in the area of Gran Paradiso National Park using data taken from Sentinel 2 - Copernicus. 
+    \item Comparison done by taking in account the \textbf{NDSI} (Normalized Difference Snow Index)  
+    \item 3 clusters to identify: \\
+    - snow presence\\
+    - snow absence/mixture\\
+    - vegetation\\
+     \end{itemize}  
+\end{frame}
+
+\begin{frame}
+    
+\begin{figure}[Italy from NASA Visible Earth]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Italy.jpg}
+    \caption{Italy from NASA Visible Earth}
+    \label{Italy from NASA visible Earth}
+\end{figure}
+
+
+
+\end{frame}
+
+
+\section{Analysis in R}
+
+\begin{frame}{First Passages}
+    \begin{itemize}
+        \item Data taken from Sentinel 2 - Open Hub
+        \item Classification of images based on years and bands (b2, b3, b4, b8, b11)
+        \item Change in resolution and dimension of b8 and b11 images using the function 'disagg'
+        \item Computation of NDSI (2016 and 2023) and its difference to see variation of snow
+        \item Histograms on NDSI and its variation
+        
+      
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{What is the NDSI?}
+The NDSI (Normalized Difference Snow index) is designed to highlight snow-covered areas in remote sensing imagery. \\
+It is calculated as the difference between the reflectance in the visible (from the green band) and shortwave infrared (SWIR) band, normalized by their sum.
+It ranges from -1 to 1:  
+\begin{itemize}
+    \item \textbf{Positive values} (\textgreater 0.4) = snow-covered areas
+    \item \textbf{Values near 0} = non-snow-covered areas or areas with mixture of snow and other features
+    \item \textbf{Negative values} = abundant vegetation
+\end{itemize}
+
+The formula used is the following:\\
+         \begin{equation}
+         NDSI = \frac{green - SWIR}{green + SWIR}
+           \end{equation}
+     
+\end{frame}
+
+\begin{frame}{Results from NDSI}
+    
+\begin{figure}[]
+    \includegraphics[width=0.4\textwidth]{carina.jpeg}
+    \includegraphics[width=0.4\textwidth]{carina 2.jpeg}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+    
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{NDSIdifff.jpeg}
+    \caption{Differences from 2016 and 2023\\
+    \tiny - brown areas = positive difference \\ 
+    \tiny - white areas = no significant variations\\
+    \tiny - blue areas = negative difference }
+
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{The Histograms}
+\begin{figure}
+  
+    \includegraphics[width=0.3\linewidth]{hist2016.jpeg} \hfill
+    \includegraphics[width=0.3\linewidth]{hist2023.jpeg} \hfill
+    \includegraphics[width=0.3\linewidth]{histdifnew.jpeg}  \hfill  
+    \caption{NDSI histograms}
+
+\end{figure}
+
+
+\end{frame}
+
+
+
+\begin{frame}{Following passages}
+Based on the values that NDSI can assume, I established 3 thresholds in R in order to create \textbf{3 clusters}. \\
+Then I computed the \textbf{percentages} of the 3 clusters.\\
+\vspace{0.2cm}
+At the end I calculated the \textbf{standard deviation} with the function 'focal' and I obtained very low values (lack of variability or high homogeneity within moving windows).  
+    
+
+\end{frame}
+
+\begin{frame}
+    
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\textwidth]{2016.jpeg}
+    \includegraphics[width=0.4\textwidth]{2023.jpeg}
+    \caption{Images based on the values of the images points\\
+    \tiny - 3th cluster(green points): values \textgreater  0.4 (snow)\\
+    \tiny - 2th cluster (yellow points): values between 0 and 0.4 (mixture) \\
+    \tiny - 0th cluster (white points): negative values between -1 and 0 (vegetation)  }
+  
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{The Graphs}
+    Then I extracted the total number of pixels to compute the percentages of pixels of the 3 clusters. \\
+    The function used to create the graphs is based on the
+    \texttt{ggplot2} package and looks like this:\\
+
+\begin{lstlisting}[language=R, basicstyle=\tiny]
+
+class <- c("SNOW", "MIXTURE", "VEGETATION")
+y2016 <- c(65.5, 8.5, 26)
+y2023 <- c(46.5, 31, 22.5)
+
+tabout <- data.frame(class, y2016, y2023)
+
+p1 <- ggplot(tabout, aes(x=class, y=y2016, color=class)) + 
+      + geom_bar(stat="identity", fill="white") + ylim(c(0,100))
+p2 <- ggplot(tabout, aes(x=class, y=y2023, color=class)) + 
+      + geom_bar(stat="identity", fill="white") + ylim(c(0,100))
+
+plot(p1)
+plot(p2)
+
+\end{lstlisting}
+
+\end{frame}
+  
+
+\begin{frame}{The graphs}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\textwidth]{GRAPH 1.jpeg} 
+    \includegraphics[width=0.4\textwidth]{GRAPH 2.jpeg}
+    \caption{Graphs based on percentages of snow, no-snow (mixture), vegetation\\
+    \small  For 2016: snow \SI{65.5}{\percent}, mixture \SI{8.5}{\percent}, vegetation \SI{26}{\percent}\\
+    \small For 2023: snow \SI{46.5}{\percent}, mixture \SI{31}{\percent}, vegetation \SI{22.6}{\percent} }
+  
+\end{figure}
+
+\end{frame}
+
+\section{Materials and Methods}
+\begin{frame}{Materials and Methods}
+\begin{itemize}
+    \item Data collection: Copernicus Open Access Hub - Sentinel 2
+    \item R packages: 'terra' 'imageRy' 'ncdf4' 'ggplot2'
+    \item Code availability: Github/gaiabene/R\textunderscore code\textunderscore exam.R
+    \end{itemize}
+
+\end{frame}
+
+\section{Final considerations}
+\begin{frame}{Final considerations}
+
+The analysis have highlighted a \textbf{variation} in snow coverage between the year 2016 and the year 2023.\\
+In particular we can see how the NDSI values towards 0 (representing the absence of snow) increase but not the negative ones which instead indicate the presence of vegetation.\\
+\vspace{0.5cm}
+More in-depth analysis, that take in account other features like elevation, could evaluate the hypothesis of a decrease in precipitation or an early melting due to the rise in temperatures. 
+    
+\end{frame}
+    
+\end{frame}
+
+\section{Bibliography}
+
+\begin{frame}{References}
+  \begin{itemize}
+      \item Richiardi, Blonda (2021)
+      "A Revised Snow Cover Algorithm to Improve Discrimination between Snow and Clouds: A Case Study in Gran Paradiso National Park"
+      \item Dedieu, Carlson (2016) "On the Importance of High-Resolution Time Series of Optical Imagery for Quantifying the Effects of Snow Cover Duration on Alpine Plant Habitat"
+      \item Poussin, Guigoz (2019) "Snow Cover Evolution in the Gran Paradiso National Park, Italian Alps, Using the Earth Observation Data Cube"
+      \item https://eos.com
+      \item https://nsidc.org      
+      \end{itemize}
+\end{frame}
+
+
+\end{document}
